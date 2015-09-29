@@ -33,9 +33,14 @@ class PongEmpty(restful.Resource):
     def post(self):
         return {}, 201
 
+class PongEmptyTaxi(restful.Resource):
+    def post(self):
+        return {'data': [{}]}, 201
+
 api.add_resource(Pong, '/hail/')
 api.add_resource(PongAPIKEY, '/hail_apikey/')
 api.add_resource(PongEmpty, '/hail_empty/')
+api.add_resource(PongEmptyTaxi, '/hail_empty_taxi/')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
