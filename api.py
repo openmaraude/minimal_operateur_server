@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 from flask import Flask, request, abort, current_app
 import flask_restful as restful
 
