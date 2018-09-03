@@ -1,5 +1,5 @@
 from flask import Flask, request, abort, current_app
-from flask.ext import restful
+import flask_restful as restful
 
 app = Flask(__name__)
 api = restful.Api(app)
