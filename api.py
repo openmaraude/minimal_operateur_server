@@ -5,7 +5,7 @@ import flask_restplus as restplus
 app = Flask(__name__)
 api = restplus.Api(app)
 
-class Pong(restful.Resource):
+class Pong(restplus.Resource):
     def post(self):
        for h in request.headers.keys():
            current_app.logger.info("{}: {}".format(h, request.headers.get(h)))
@@ -16,7 +16,7 @@ class Pong(restful.Resource):
        json['data'][0]['taxi_phone_number'] = 'aaa'
        return json, 201
 
-class PongAPIKEY(restful.Resource):
+class PongAPIKEY(restplus.Resource):
     def post(self):
        apikey = request.headers.get('X-API-KEY', None)
        if not apikey:
@@ -30,11 +30,11 @@ class PongAPIKEY(restful.Resource):
        json['data'][0]['taxi_phone_number'] = 'aaa'
        return json, 201
 
-class PongEmpty(restful.Resource):
+class PongEmpty(restplus.Resource):
     def post(self):
         return {}, 201
 
-class PongEmptyTaxi(restful.Resource):
+class PongEmptyTaxi(restplus.Resource):
     def post(self):
         return {'data': [{}]}, 201
 
