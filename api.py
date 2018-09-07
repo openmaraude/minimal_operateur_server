@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 from flask import Flask, request, abort, current_app
-import flask_restful as restful
+import flask_restplus as restplus
 
 app = Flask(__name__)
-api = restful.Api(app)
+api = restplus.Api(app)
 
 class Pong(restful.Resource):
     def post(self):
