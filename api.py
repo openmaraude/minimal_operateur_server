@@ -1,6 +1,6 @@
-#!/usr/bin/env python2
-from flask import Flask, request, abort, current_app
+from flask import Flask, request, abort, current_app, g
 import flask_restplus as restplus
+import requests
 
 app = Flask(__name__)
 api = restplus.Api(app)
@@ -14,6 +14,7 @@ class Pong(restplus.Resource):
            abort(400)
        json['data'][0]['status'] = 'received_by_taxi'
        json['data'][0]['taxi_phone_number'] = 'aaa'
+       g.last_hail_id = json['data'][0]['id']
        return json, 201
 
 class PongAPIKEY(restplus.Resource):
@@ -38,10 +39,32 @@ class PongEmptyTaxi(restplus.Resource):
     def post(self):
         return {'data': [{}]}, 201
 
+class PongLastHail(restplus.Resource):
+    def post(self):
+       json = request.get_json()
+       apikey = json['apikey']
+       server = json['server'].rstrip("/")
+       status = json['status']
+
+       payload = {"data": [{"status": status}]}
+       if status == 'accepted_by_taxi':
+           payload = payload['data'][0]['taxi_phone_number'] = '010101010'
+
+       r = request.put(
+           "{}/hails/{}/".format(server, g.last_hail_id),
+           json=payload,
+           headers={"Accept": "application/json", "X-VERSION": "2", "X-API-KEY": apikey}
+       )
+
+       return r.json(), 200
+
+
+
 api.add_resource(Pong, '/hail/')
 api.add_resource(PongAPIKEY, '/hail_apikey/')
 api.add_resource(PongEmpty, '/hail_empty/')
 api.add_resource(PongEmptyTaxi, '/hail_empty_taxi/')
+api.add_resource(PongLastHail, '/last_hail/_set_status')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
