@@ -1,5 +1,5 @@
 from flask import Flask, request, abort, current_app, g
-import flask_restplus as restplus
+import flask_restx as restplus
 import requests
 
 app = Flask(__name__)
