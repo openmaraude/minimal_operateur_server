@@ -1,6 +1,6 @@
-# minimal_operateur_server
-
 **English speakers: we expect most of our users to be french. If you want to implement an api.taxi operator but are not a french speaker, please create an issue in this repository  and we'll translate this document.**
+
+# minimal_operateur_server
 
 Ce projet est un exemple de serveur opérateur utilisé dans le cadre du registre [api.taxi](https://le.taxi/).
 
