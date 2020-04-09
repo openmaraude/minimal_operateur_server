@@ -1,70 +1,135 @@
-from flask import Flask, request, abort, current_app, g
-import flask_restx as restplus
+import json
+import os
+import time
+import urllib
+
+from flask import Flask, jsonify, request
+from flask_rq2 import RQ
 import requests
 
+
 app = Flask(__name__)
-api = restplus.Api(app)
+app.config.from_object('minimal_operateur_server.default_settings')
+# Override default configuration with the file specified in the environment
+# variable API_SETTINGS.
+if os.getenv('API_SETTINGS'):
+    app.config.from_envvar('API_SETTINGS')
 
-class Pong(restplus.Resource):
-    def post(self):
-       for h in request.headers.keys():
-           current_app.logger.info("{}: {}".format(h, request.headers.get(h)))
-       json = request.get_json()
-       if not 'data' in json or len(json['data']) != 1 or 'status' not in json['data'][0]:
-           abort(400)
-       json['data'][0]['status'] = 'received_by_taxi'
-       json['data'][0]['taxi_phone_number'] = 'aaa'
-       g.last_hail_id = json['data'][0]['id']
-       return json, 201
-
-class PongAPIKEY(restplus.Resource):
-    def post(self):
-       apikey = request.headers.get('X-API-KEY', None)
-       if not apikey:
-           abort(400)
-       if apikey != 'xxx':
-            abort(403)
-       json = request.get_json()
-       if not 'data' in json or len(json['data']) != 1 or 'status' not in json['data'][0]:
-           abort(400)
-       json['data'][0]['status'] = 'received_by_taxi'
-       json['data'][0]['taxi_phone_number'] = 'aaa'
-       return json, 201
-
-class PongEmpty(restplus.Resource):
-    def post(self):
-        return {}, 201
-
-class PongEmptyTaxi(restplus.Resource):
-    def post(self):
-        return {'data': [{}]}, 201
-
-class PongLastHail(restplus.Resource):
-    def post(self):
-       json = request.get_json()
-       apikey = json['apikey']
-       server = json['server'].rstrip("/")
-       status = json['status']
-
-       payload = {"data": [{"status": status}]}
-       if status == 'accepted_by_taxi':
-           payload = payload['data'][0]['taxi_phone_number'] = '010101010'
-
-       r = request.put(
-           "{}/hails/{}/".format(server, g.last_hail_id),
-           json=payload,
-           headers={"Accept": "application/json", "X-VERSION": "2", "X-API-KEY": apikey}
-       )
-
-       return r.json(), 200
+rq = RQ()
+rq.init_app(app)
 
 
+@rq.job
+def notify_taxi(taxi_id, hail_id, customer_lon, customer_lat, customer_address,
+                customer_phone_number):
+    """Notify taxi of the incoming hail."""
+    # Here, we should notify the taxi that he has a hail request for example
+    # by sending a phone notification. When the notification is received, we
+    # update the hail status.
+    # In this example, we just sleep 0.5 seconds.
+    time.sleep(0.5)
 
-api.add_resource(Pong, '/hail/')
-api.add_resource(PongAPIKEY, '/hail_apikey/')
-api.add_resource(PongEmpty, '/hail_empty/')
-api.add_resource(PongEmptyTaxi, '/hail_empty_taxi/')
-api.add_resource(PongLastHail, '/last_hail/_set_status')
+    # Synchronously update hail status to "received_by_taxi".
+    update_hail(hail_id, 'received_by_taxi')
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    # Now we should wait for the taxi response which should accept or refuse
+    # the hail before the next 30 seconds.
+    # For this example purpose, we call the API endpoint /answer ourselves and
+    # accept the hail. In real-world, the taxi application should call the
+    # endpoint within 10 seconds.
+    app.test_client().post(
+        '/answer/%s/%s' % (taxi_id, hail_id),
+        data=json.dumps({'status': 'accept'}),
+        content_type='application/json'
+    )
+
+
+@rq.job
+def update_hail(hail_id, new_status, taxi_phone_number=None):
+    """Call api.taxi to update the status of a hail. If new_status is
+    "accepted_by_taxi", taxi_phone_number must be provided."""
+
+    # https://api.taxi/hails/:hail_id
+    url = urllib.parse.urljoin(app.config['API_TAXI_URL'], 'hails/%s' % hail_id)
+
+    payload = {'status': new_status}
+    if taxi_phone_number:
+        payload['taxi_phone_number'] = taxi_phone_number
+
+    # Make the PUT request. The expected JSON data is an object with a key
+    # "data", containing a list of one element.
+    #
+    # This element contains the status and optionally the taxi_phone_number.
+    #
+    # The headers X-Version and X-Api-Key must also be provided.
+    response = requests.put(url, json={
+        'data': [payload]
+    }, headers={
+        'X-Version': '3',
+        'X-Api-Key': app.config['API_TAXI_KEY']
+    })
+
+
+@app.route('/')
+def index():
+    return jsonify('API to receive hails from le.taxi')
+
+
+@app.route('/hail', methods=['POST'])
+def hail():
+    """This endpoint is called by the API of le.taxi when one of the operator's
+    taxis receives a hail.
+
+    le.taxi assumes the operator handled the request successfully if this
+    endpoint returns a HTTP/200 status code.
+
+    After le.taxi gets the response, you have 10 seconds to call PUT
+    https://api.taxi/hails/:hail_id with the status "received_by_taxi" to
+    inform when the taxi receives the hail, and 30 seconds to call the same
+    endpoint with:
+
+    - {"status": "accepted_by_taxi", "taxi_phone_number": "..."} if the taxi
+      accepts the hail.
+    - {"status": "declined_by_taxi"} if the taxi refuses the hail.
+
+    Refer to https://api.taxi/documentation for more detailed documentation.
+    """
+    data = request.json['data'][0]
+
+    customer_lon = data['customer_lon']
+    customer_lat = data['customer_lat']
+    customer_address = data['customer_address']
+    customer_phone_number = data['customer_phone_number']
+
+    hail_id = data['id']
+    taxi_id = data['taxi']['id']
+
+    # Asynchronously notify taxi of the new hail.
+    notify_taxi.queue(
+        taxi_id, hail_id,
+        customer_lon, customer_lat,
+        customer_address,
+        customer_phone_number
+    )
+
+    # Return an empty HTTP/200 response to inform the caller the query has been
+    # handled.
+    return jsonify({})
+
+
+@app.route('/answer/<taxi_id>/<hail_id>', methods=['POST'])
+def answer(taxi_id, hail_id):
+    """This endpoint is called by the taxi application to accept or refuse a
+    hail request.  If the status is 'accept', we call le.taxi API to set the
+    hail status to 'accepted_by_taxi', otherwise to 'declined_by_taxi'."""
+    status = request.json['status']
+
+    # The special hail status "accepted_by_taxi" requries to provide the taxi
+    # phone number.
+    if status == 'accept':
+        update_hail.queue(hail_id, 'accepted_by_taxi',
+                          taxi_phone_number='0607080910')
+    else:
+        update_hail.queue(hail_id, 'declined_by_taxi')
+
+    return jsonify({})

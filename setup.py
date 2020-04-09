@@ -6,9 +6,9 @@ import re
 PACKAGE = 'minimal_operateur_server'
 
 DEPENDENCIES = [
-    'werkzeug<=0.16.1'
-    'Flask',
-    'flask_restx',
+    'flask',
+    'flask-rq2',
+    'redis',
     'requests',
 ]
 

@@ -1,5 +1,5 @@
-__author__ = 'Vincent Lara'
-__contact__ = 'vincent.lara@data.gouv.fr'
+__author__ = 'Julien Castets'
+__contact__ = 'julien.castets@beta.gouv.fr'
 __homepage__ = 'https://github.com/openmaraude/minimal_operateur_server'
 __version__ = '0.1.0'
-__doc__ = 'Development server of APITaxi operator'
+__doc__ = 'APITaxi operator server example'
