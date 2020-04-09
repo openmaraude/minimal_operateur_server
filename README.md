@@ -45,6 +45,13 @@ L'opérateur doit alors effectuer les actions suivantes :
 	- si le taxi refuse la course, mettre le statut de la course à `declined_by_taxi`.
 	- si le statut de la course n'est pas mis à jour avant 30 secondes, la course est automatiquement annulée.
 
+Pour plus d'informations, consultez la [documentation](https://api.taxi/documentation) de votre console d'administration.
+
 ## Limitations
 
 Ce serveur d'exemple accepte toutes les courses. Son intérêt est de présenter une API simple et commentée sur laquelle vous pouvez vous baser pour effectuer l'intégration de votre solution. Il sera donc à votre charge d'implémenter la notification de demande de course.
+
+## Modules utilisés
+
+* [flask](https://flask.palletsprojects.com) est un des frameworks Python les plus connus pour développer une application web
+* [rq](https://python-rq.org/) et le module Flask correspondant [flask-rq2](https://flask-rq2.readthedocs.io) est utilisé pour effectuer des requêtes asynchrones. La notification de la course au taxi ainsi que la mise à jour du statut de la course son faits de manière asynchrone par un worker.
