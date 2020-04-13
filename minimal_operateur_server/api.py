@@ -9,6 +9,7 @@ import requests
 
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 app.config.from_object('minimal_operateur_server.default_settings')
 # Override default configuration with the file specified in the environment
 # variable API_SETTINGS.
