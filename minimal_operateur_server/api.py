@@ -4,6 +4,7 @@ import time
 import urllib
 
 from flask import Flask, jsonify, request
+from marshmallow import Schema, fields, validate
 from flask_rq2 import RQ
 import requests
 
@@ -76,6 +77,31 @@ def index():
     return jsonify('API to receive hails from le.taxi')
 
 
+class HailTaxiSchemaContent(Schema):
+    id = fields.String(required=True)
+
+
+class HailSchemaContent(Schema):
+    customer_lon = fields.String(required=True)
+    customer_lat = fields.String(required=True)
+    customer_address = fields.String(required=True)
+    customer_phone_number = fields.String(required=True)
+    id = fields.String(required=True)
+    taxi = fields.Nested(HailTaxiSchemaContent(), required=True)
+
+
+class HailSchema(Schema):
+    """Validation for parameters sent by le.taxi API to request a hail.
+
+    The parameter should be an object with the key "data" and the value a list
+    of one element, the payload."""
+    data = fields.List(
+        fields.Nested(HailSchemaContent),
+        required=True,
+        validate=validate.Length(min=1, max=1)
+    )
+
+
 @app.route('/hail', methods=['POST'])
 def hail():
     """This endpoint is called by the API of le.taxi when one of the operator's
@@ -95,6 +121,10 @@ def hail():
 
     Refer to https://api.taxi/documentation for more detailed documentation.
     """
+    errors = HailSchema().validate(request.json)
+    if errors:
+        return jsonify({'errors': errors}), 400
+
     data = request.json['data'][0]
 
     customer_lon = data['customer_lon']
@@ -118,12 +148,26 @@ def hail():
     return jsonify({})
 
 
+class AnswerSchema(Schema):
+    status = fields.String(
+        required=True,
+        validate=validate.OneOf(['accept', 'decline'])
+    )
+
+
 @app.route('/answer/<taxi_id>/<hail_id>', methods=['POST'])
 def answer(taxi_id, hail_id):
     """This endpoint is called by the taxi application to accept or refuse a
     hail request.  If the status is 'accept', we call le.taxi API to set the
     hail status to 'accepted_by_taxi', otherwise to 'declined_by_taxi'."""
+    errors = AnswerSchema().validate(request.json)
+    if errors:
+        return jsonify({'errors': errors}), 400
+
     status = request.json['status']
+
+    # For security reasons, we should make sure taxi_id and hail_id are
+    # correct.
 
     # The special hail status "accepted_by_taxi" requries to provide the taxi
     # phone number.

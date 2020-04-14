@@ -8,6 +8,7 @@ PACKAGE = 'minimal_operateur_server'
 DEPENDENCIES = [
     'flask',
     'flask-rq2',
+    'marshmallow',
     'redis',
     'requests',
 ]

@@ -54,4 +54,5 @@ Ce serveur d'exemple accepte toutes les courses. Son intérêt est de présenter
 ## Modules utilisés
 
 * [flask](https://flask.palletsprojects.com) est un des frameworks Python les plus connus pour développer une application web
+* [marshmallow](https://marshmallow.readthedocs.io) pour vérifier les paramètres envoyés à l'API.
 * [rq](https://python-rq.org/) et le module Flask correspondant [flask-rq2](https://flask-rq2.readthedocs.io) est utilisé pour effectuer des requêtes asynchrones. La notification de la course au taxi ainsi que la mise à jour du statut de la course son faits de manière asynchrone par un worker.
