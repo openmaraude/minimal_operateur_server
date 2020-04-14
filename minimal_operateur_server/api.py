@@ -4,7 +4,7 @@ import time
 import urllib
 
 from flask import Flask, jsonify, request
-from marshmallow import Schema, fields, validate
+from marshmallow import EXCLUDE, fields, Schema, validate
 from flask_rq2 import RQ
 import requests
 
@@ -78,12 +78,20 @@ def index():
 
 
 class HailTaxiSchemaContent(Schema):
+    class Meta:
+        """Allow extra fields."""
+        unknown = EXCLUDE
+
     id = fields.String(required=True)
 
 
 class HailSchemaContent(Schema):
-    customer_lon = fields.String(required=True)
-    customer_lat = fields.String(required=True)
+    class Meta:
+        """Allow extra fields."""
+        unknown = EXCLUDE
+
+    customer_lon = fields.Float(required=True)
+    customer_lat = fields.Float(required=True)
     customer_address = fields.String(required=True)
     customer_phone_number = fields.String(required=True)
     id = fields.String(required=True)
@@ -95,6 +103,10 @@ class HailSchema(Schema):
 
     The parameter should be an object with the key "data" and the value a list
     of one element, the payload."""
+    class Meta:
+        """Allow extra fields."""
+        unknown = EXCLUDE
+
     data = fields.List(
         fields.Nested(HailSchemaContent),
         required=True,
