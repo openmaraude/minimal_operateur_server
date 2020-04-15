@@ -20,6 +20,8 @@ ENV LC_ALL=C.UTF-8
 
 RUN useradd api
 
+ENV FLASK_APP minimal_operateur_server.api
+
 COPY . /app
 WORKDIR /app
 

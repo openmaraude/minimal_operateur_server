@@ -16,7 +16,6 @@ services:
       # development we might lose messages.
       PYTHONUNBUFFERED: 1
       API_SETTINGS: /settings.py
-      FLASK_APP: minimal_operateur_server.api
       FLASK_DEBUG: 1
 
   redis:
