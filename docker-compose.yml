@@ -5,7 +5,7 @@ services:
     build: .
     volumes:
       - .:/app
-      - settings.py:/settings.py
+      - ./settings.py:/settings.py
     ports:
       - 12000:5000
     depends_on:
