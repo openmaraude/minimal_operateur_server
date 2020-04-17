@@ -18,6 +18,8 @@ RUN apt-get update && apt-get install -y \
 
 ENV LC_ALL=C.UTF-8
 
+RUN pip3 install tox
+
 RUN useradd api
 
 ENV FLASK_APP minimal_operateur_server.api
