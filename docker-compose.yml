@@ -25,6 +25,7 @@ services:
     build: .
     volumes:
       - .:/app
+      - ./settings.py:/settings.py
     depends_on:
       - redis
     command: ['flask', 'rq', 'worker']
