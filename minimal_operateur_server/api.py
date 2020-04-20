@@ -11,14 +11,17 @@ import requests
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-app.config.from_object('minimal_operateur_server.default_settings')
-# Override default configuration with the file specified in the environment
-# variable API_SETTINGS.
-if os.getenv('API_SETTINGS'):
-    app.config.from_envvar('API_SETTINGS')
 
 rq = RQ()
-rq.init_app(app)
+
+
+def create_app():
+    app.config.from_object('minimal_operateur_server.default_settings')
+    # Override default configuration with the file specified in the environment
+    # variable API_SETTINGS.
+    if os.getenv('API_SETTINGS'):
+        app.config.from_envvar('API_SETTINGS')
+    rq.init_app(app)
 
 
 @rq.job
