@@ -1,0 +1,17 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: python:3
+    steps:
+      - checkout
+      # Display current revision
+      - run: git log -1
+      - run: pip install tox
+      - run: tox
+
+workflows:
+  minimal-operateur-server:
+    jobs:
+      - test
