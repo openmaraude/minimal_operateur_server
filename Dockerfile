@@ -22,7 +22,7 @@ RUN pip3 install tox
 
 RUN useradd api
 
-ENV FLASK_APP minimal_operateur_server.api
+ENV FLASK_APP minimal_operateur_server.api:create_app
 
 COPY . /app
 WORKDIR /app
