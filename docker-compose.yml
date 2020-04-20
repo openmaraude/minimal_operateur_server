@@ -29,5 +29,3 @@ services:
     depends_on:
       - redis
     command: ['flask', 'rq', 'worker']
-    environment:
-      FLASK_APP: minimal_operateur_server.api
