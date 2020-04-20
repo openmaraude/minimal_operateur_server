@@ -13,7 +13,7 @@ Vous trouverez plus de détails sur la page de [documentation](https://api.taxi/
 ## Utilisation
 
 * Éditez le fichier `settings.py` et renseignez votre token d'API dans la variable `API_TAXI_KEY`. Si vous travaillez sur l'environnement de développement, vous devrez modifier `API_TAXI_URL` pour renseigner `https://dev.api.taxi`.
-* Lancez les containers avec `docker-compose up`
+* Lancez les containers avec `docker-compose build && docker-compose up`
 
 ## Fonctionnement
 
