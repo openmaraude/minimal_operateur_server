@@ -22,6 +22,7 @@ def create_app():
     if os.getenv('API_SETTINGS'):
         app.config.from_envvar('API_SETTINGS')
     rq.init_app(app)
+    return app
 
 
 @rq.job
