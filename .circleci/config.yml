@@ -11,7 +11,42 @@ jobs:
       - run: pip install tox
       - run: tox
 
+  build:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build docker image
+          command: |
+            docker build -t openmaraude/minimal_operateur_server:${CIRCLE_TAG} .
+            docker tag openmaraude/minimal_operateur_server:${CIRCLE_TAG} openmaraude/minimal_operateur_server:latest
+      - run:
+          name: Publish docker Image to hub.docker.com
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push openmaraude/minimal_operateur_server:${CIRCLE_TAG}
+            docker push openmaraude/minimal_operateur_server:latest
+
 workflows:
   minimal-operateur-server:
     jobs:
       - test
+
+  # Build artifacts, ignore all branches, only run for all tags.
+  artifacts:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
+
+      - build:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /.*/
