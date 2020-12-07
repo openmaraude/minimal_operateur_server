@@ -17,7 +17,8 @@ ENV DEBCONF_NONINTERACTIVE_SEEN=true
 RUN apt-get update && apt-get install -y \
   python3-pip \
   uwsgi \
-  uwsgi-plugin-python3
+  uwsgi-plugin-python3 \
+  redis-tools
 
 ENV LC_ALL=C.UTF-8
 
