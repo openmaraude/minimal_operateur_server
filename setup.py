@@ -10,6 +10,7 @@ DEPENDENCIES = [
     'flask-rq2',
     'marshmallow',
     'redis',
+    'hiredis',
     'requests',
 ]
 
