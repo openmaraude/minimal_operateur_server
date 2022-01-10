@@ -20,12 +20,19 @@ jobs:
       - run:
           name: Build docker image
           command: |
+            docker build --target devenv -t openmaraude/minimal_operateur_server-devenv:${CIRCLE_TAG} .
+            docker tag openmaraude/minimal_operateur_server-devenv:${CIRCLE_TAG} openmaraude/minimal_operateur_server-devenv:latest
+
             docker build -t openmaraude/minimal_operateur_server:${CIRCLE_TAG} .
             docker tag openmaraude/minimal_operateur_server:${CIRCLE_TAG} openmaraude/minimal_operateur_server:latest
       - run:
           name: Publish docker Image to hub.docker.com
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            docker push openmaraude/minimal_operateur_server-devenv:${CIRCLE_TAG}
+            docker push openmaraude/minimal_operateur_server-devenv:latest
+
             docker push openmaraude/minimal_operateur_server:${CIRCLE_TAG}
             docker push openmaraude/minimal_operateur_server:latest
 
