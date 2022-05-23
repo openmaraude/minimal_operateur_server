@@ -56,21 +56,28 @@ RUN apt-get update && apt-get install -y \
   python3-pip \
   uwsgi \
   uwsgi-plugin-python3 \
-  redis-tools
+  redis-tools \
+  supervisor
 
 ENV LC_ALL=C.UTF-8
 
-RUN pip3 install tox
-
 RUN useradd api
-
 ENV FLASK_APP minimal_operateur_server.api:create_app
 
-COPY . /app
+# COPY setup.py first before running `pip3 install .` to use Docker cache if
+# dependencies did not change. minimal_operateur_server/__init__.py is read by
+# setup.py, so it is also required.
+COPY setup.py /app/
+COPY minimal_operateur_server/__init__.py /app/minimal_operateur_server/
 WORKDIR /app
 
 RUN pip3 install .
 
-USER api
+# Supervisor and services configuration
+COPY deploy/supervisor/* /etc/supervisor/conf.d/
+COPY deploy/conf/* /etc/minimal-operateur-server/
 
-CMD ["uwsgi", "/uwsgi.ini"]
+# Application source code
+COPY . /app
+
+CMD ["/usr/bin/supervisord", "--nodaemon"]
