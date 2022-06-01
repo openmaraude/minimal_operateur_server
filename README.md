@@ -56,3 +56,23 @@ Ce serveur d'exemple accepte toutes les courses. Son intérêt est de présenter
 * [flask](https://flask.palletsprojects.com) est un des frameworks Python les plus connus pour développer une application web
 * [marshmallow](https://marshmallow.readthedocs.io) pour vérifier les paramètres envoyés à l'API.
 * [rq](https://python-rq.org/) et le module Flask correspondant [flask-rq2](https://flask-rq2.readthedocs.io) est utilisé pour effectuer des requêtes asynchrones. La notification de la course au taxi ainsi que la mise à jour du statut de la course son faits de manière asynchrone par un worker.
+
+
+## Deployment
+
+To deploy to production, setup the following remote and push on the master branch.
+
+```
+git remote add clevergit+ssh://git@push-n2-par-clevercloud-customers.services.clever-cloud.com/app_04fd96bf-9ded-42df-a946-30a79eae21a0.git
+```
+
+To connect to container, install [CleverCloud CLI](https://www.clever-cloud.com/doc/reference/clever-tools/getting_started/) and run the following commands:
+
+```
+clever link app_04fd96bf-9ded-42df-a946-30a79eae21a0
+
+# Outputs "dev-minimal-operateur-server"
+clever applications
+
+clever ssh -a dev-minimal-operateur-server
+```
