@@ -33,6 +33,7 @@ cat<<EOF > "$API_SETTINGS"
 RQ_REDIS_URL = 'redis://redis:6379/0'
 API_TAXI_URL = 'http://api:5000'
 API_TAXI_KEY = '${API_KEY}'
+API_TAXI_DISABLE_ANSWER = True
 EOF
 
 # Execute Docker CMD

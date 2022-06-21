@@ -21,6 +21,8 @@ def create_app():
     # variable API_SETTINGS.
     if os.getenv('API_SETTINGS'):
         app.config.from_envvar('API_SETTINGS')
+    if app.config.get('API_TAXI_DISABLE_ANSWER'):
+        app.logger.info("Taxi answer was disabled, hail requests won't be automatically accepted.")
     rq.init_app(app)
     return app
 
@@ -37,6 +39,10 @@ def notify_taxi(taxi_id, hail_id, customer_lon, customer_lat, customer_address,
 
     # Synchronously update hail status to "received_by_taxi".
     update_hail(hail_id, 'received_by_taxi')
+
+    # Stop here if we want the integration simulator to control the taxi answer
+    if app.config.get('API_TAXI_DISABLE_ANSWER'):
+        return
 
     # Now we should wait for the taxi response which should accept or refuse
     # the hail before the next 30 seconds.

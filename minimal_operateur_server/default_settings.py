@@ -7,3 +7,5 @@ API_TAXI_URL = os.getenv('API_TAXI_URL', 'https://dev.api.taxi')
 
 # le.taxi API key, required to change the hail status.
 API_TAXI_KEY = os.getenv('API_TAXI_KEY')
+
+API_TAXI_DISABLE_ANSWER = os.getenv('API_TAXI_DISABLE_ANSWER')
