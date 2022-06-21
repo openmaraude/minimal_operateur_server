@@ -1,6 +1,6 @@
 ##### DEV IMAGE #####
 
-FROM ubuntu AS devenv
+FROM ubuntu:20.04 AS devenv
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
@@ -47,7 +47,7 @@ CMD ["flask", "run", "--host", "0.0.0.0"]
 # socket = 0.0.0.0:5001
 # stats = 0.0.0.0:5008 --stats-http
 
-FROM ubuntu
+FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
